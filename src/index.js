@@ -15,9 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // ------------------------------------------------------------------------
   //fetch all of the current toys and add to the page
+  // ------------------------------------------------------------------------
 
-  //fetch request
+  //fetch request for original toy data 
   fetch("http://localhost:3000/toys/")
   .then(response => response.json())
   .then(data => createToyCards(data))
@@ -42,6 +44,12 @@ document.addEventListener("DOMContentLoaded", () => {
         button.textContent = 'button text'
         button.classList.add('like-btn')
         button.id = object[objKey].id
+        button.addEventListener('click', () => {
+          object[objKey].likes += 1;
+          console.log("Number of Likes" , object[objKey].likes)
+          div.querySelector('p').textContent = object[objKey].likes
+          updateLikes(object[objKey])
+        })
 
       toyCollection = document.querySelector('#toy-collection')
       toyCollection.appendChild(div)
@@ -51,5 +59,55 @@ document.addEventListener("DOMContentLoaded", () => {
       div.appendChild(button)
     }
   }
+
+  // ------------------------------------------------------------------------
+  //update the database with new likes via PATCH Update
+  // ------------------------------------------------------------------------
+  function updateLikes(object){
+    console.log(`Object ID ${object.id}`),
+    console.log(`Object Likes ${object.likes}`)
+    fetch(`http://localhost:3000/toys/${object.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(object)
+    })
+    .then(resp => resp.json())
+    .then(data => console.log(data))
+  }
+
+  // ------------------------------------------------------------------------
+  // add an item to the database
+  // ------------------------------------------------------------------------
+
+  const inputTexts = document.querySelectorAll('.input-text')
+  document.querySelector('.add-toy-form').addEventListener('submit', (e) => {
+    //e.preventDefault()
+    return addNewToy()
+  })
+
+    function addNewToy(){
+      const formData = document.getElementsByClassName('input-text')
+      const newToyName = formData[0].value 
+      const newToyURL = formData[1].value 
+
+
+      console.log("adding new toy")
+      fetch('http://localhost:3000/toys/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json'
+        },
+        body: JSON.stringify({
+          'name': newToyName,
+          'image': newToyURL,
+          'likes': '0'
+        })
+      })
+      .then(response => response.json())
+      .then(data => console.log(data))
+    }
 
 });
